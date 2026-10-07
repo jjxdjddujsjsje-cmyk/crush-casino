@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crush Kazino</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        body {
+            background-color: #0b0b0b;
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+            user-select: none;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffb300, #ff3300);
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 22px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(255, 51, 0, 0.4);
+        }
+        .balance-box {
+            background: #161616;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a2a;
+            font-size: 18px;
+        }
+        .balance-box strong { color: #ffb300; }
+        
+        /* SƏHİFƏLƏR */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* OYUNLAR SƏHİFƏSİ */
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .game-card {
+            background: #1c1c1c;
+            border: 1.5px solid #ffb300;
+            border-radius: 12px;
+            padding: 25px 10px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .game-card small { display: block; color: #888; font-size: 12px; margin-top: 5px; }
+
+        /* REAl FRUITS SLOT INTERFEYSİ */
+        .slot-machine {
+            background: #111;
+            border: 3px solid #ffb300;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+        .reels {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 45px;
+            margin: 20px 0;
+            background: #000;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .spin-btn {
+            background: linear-gradient(135deg, #00ffcc, #0099ff);
+            color: black;
+            border: none;
+            padding: 12px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        /* FORMALAR (DEPOZIT / ÇIXARIŞ) */
+        .form-group {
+            background: #161616;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        label { display: block; margin-bottom: 8px; color: #aaa; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #ffb300, #ff3300);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* NAVİQASİYA BAR */
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #121212;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 2px solid #222;
+        }
+        .nav-btn {
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav-btn.active { color: #ffb300; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="app-title">🌟 CRUSH KAZİNO 🌟</div>
+
+    <div class="balance-box">
+        <span>💳 Güncəl Balansınız: </span>
+        <strong id="user-balance">1000 TL</strong>
+    </div>
+
+    <!-- 🎮 1. SƏHİFƏ: OYUNLAR MENYUSU -->
+    <div id="page-games" class="page active">
+        <div class="game-grid">
+            <div class="game-card" onclick="openSlotGame()">🍒 Rich Fruits<small>Slot Oyunu</small></div>
+            <div class="game-card" onclick="alert('Aviatop çox tezliklə aktiv ediləcək!')">🚀 Aviatop<small>Crash Oyunu</small></div>
+            <div class="game-card" onclick="alert('Rulet masası hazırlanır!')">🔴 Rulet<small>Canlı Çark</small></div>
+            <div class="game-card" onclick="alert('Hot Sevens çox tezliklə!')">🔥 Hot Sevens<small>Klasik Slot</small></div>
+        </div>
+    </div>
+
+    <!-- 🎰 İNTEQRASİYA EDİLMİŞ REAL SLOT OYUNU -->
+    <div id="page-slot-fruits" class="page">
+        <button onclick="switchPage('games')" style="float:left; background:#333; color:white; border:none; padding:5px 10px; border-radius:5px; margin-bottom:10px;">⬅️ Geri</button>
+        <div style="clear:both;"></div>
+        <div class="slot-machine">
+            <h3>🍒 RICH FRUITS SLOT 🍒</h3>
+            <div class="reels">
+                <span id="reel1">🍒</span>
+                <span id="reel2">🍋</span>
+                <span id="reel3">🍇</span>
+            </div>
+            <p style="color:#aaa;">Mərc: 10 TL</p>
+            <button class="spin-btn" onclick="spinSlot()">FIRLAT</button>
+            <p id="slot-status" style="font-weight:bold; margin-top:15px;"></p>
+        </div>
+    </div>
+
+    <!-- 📥 2. SƏHİFƏ: DEPOZİT SƏHİFƏSİ -->
+    <div id="page-deposit" class="page">
+        <div class="form-group">
+            <h3>📥 Balans Artırma (Manuel Köçürmə)</h3>
+            <label>Məbləğ (TL):</label>
+            <input type="number" id="dep-amount" value="500" min="50">
+            
+            <label>Ödəniş Metodu:</label>
+            <select>
+                <option>MilliÖn / Emanat / Kartdan Karta</option>
+            </select>
+            
+            <div style="background:#000; padding:10px; border-radius:6px; border:1px dashed #ffb300; margin-bottom:15px; font-size:14px;">
+                <strong>📌 Bank Məlumatları:</strong><br>
+                Kart Sahibi: Emin Mammadov<br>
+                Kart Nömrəsi: 4169 0000 0000 0000<br>
+                Paşa Bank
+            </div>
+
+            <label>Çekin Şəkli (SS / Fotoşəkil):</label>
+            <input type="file" id="dep-file" accept="image/*">
+
+            <button class="btn-submit" onclick="submitDeposit()">ÖDƏNİŞİ TƏSDİQLƏ</button>
+        </div>
+    </div>
+
+    <!-- 📤 3. SƏHİFƏ: ÇIXARIŞ SƏHİFƏSİ -->
+    <div id="page-withdraw" class="page">
+        <div class="form-group">
+            <h3>📤 Pul Çıxarışı</h3>
+            <label>Kart Nömrəniz (16 rəqəm):</label>
+            <input type="text" placeholder="4169 ...." maxlength="19">
+            
+            <label>Məbləğ (TL):</label>
+            <input type="number" id="with-amount" placeholder="Minimum 20 TL">
+
+            <button class="btn-submit" onclick="alert('Çıxarış sorğunuz rəhbərliyə göndərildi!')">KARTA ÇƏK</button>
+        </div>
+    </div>
+
+    <!-- 👤 4. SƏHİFƏ: PROFİL SƏHİFƏSİ -->
+    <div id="page-profile" class="page">
+        <div class="form-group" style="text-align:center;">
+            <div style="font-size:50px;">👤</div>
+            <h3 id="prof-name">Gamer</h3>
+            <p style="color:#aaa;">ID: <span id="prof-id">Yüklənir...</span></p>
+            <p>Status: <span style="color:#00ffcc; font-weight:bold;">VIP İSTİFADƏÇİ</span></p>
+        </div>
+    </div>
+
+    <!-- 📱 ALT NAVİQASİYA BAR (ŞƏKİLLƏRDƏKİ KİMİ TAM İŞLƏK) -->
+    <div class="footer-nav">
+        <div id="btn-games" class="nav-btn active" onclick="switchPage('games')">🎮 Oyunlar</div>
+        <div id="btn-deposit" class="nav-btn" onclick="switchPage('deposit')">📥 Depozit</div>
+        <div id="btn-withdraw" class="nav-btn" onclick="switchPage('withdraw')">📤 Çıxarış</div>
+        <div id="btn-profile" class="nav-btn" onclick="switchPage('profile')">👤 Profil</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let balance = 1000; // Başlanğıc virtual balans
+
+        // Profil məlumatlarını Telegram-dan avtomatik çəkir
+        if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('prof-name').innerText = tg.initDataUnsafe.user.first_name;
+            document.getElementById('prof-id').innerText = tg.initDataUnsafe.user.id;
+        }
+
+        // SƏHİFƏ KEÇİDLƏRİNİ İŞLƏDƏN FUNKSİYA
+        function switchPage(pageId) {
+            // Bütün səhifələri gizlət
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // Aktiv düymələri sıfırla
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            // Seçilən səhifəni aç
+            if(pageId === 'games') {
+                document.getElementById('page-games').classList.add('active');
+                document.getElementById('btn-games').classList.add('active');
+            } else if(pageId === 'deposit') {
+                document.getElementById('page-deposit').classList.add('active');
+                document.getElementById('btn-deposit').classList.add('active');
+            } else if(pageId === 'withdraw') {
+                document.getElementById('page-withdraw').classList.add('active');
+                document.getElementById('btn-withdraw').classList.add('active');
+            } else if(pageId === 'profile') {
+                document.getElementById('page-profile').classList.add('active');
+Kodu dikkatli kullanın.
+document.getElementById('btn-profile').classList.add('active');
+}
+}
+function openSlotGame() {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+document.getElementById('page-slot-fruits').classList.add('active');
+}
+// 🍒 REAL FIRLANAN VƏ BALANSI DƏYİŞƏN SLOT FUNKSİYASI
+function spinSlot() {
+if(balance < 10) {
+document.getElementById('slot-status').innerText = "❌ Yetersiz balans!";
+return;
+}
+balance -= 10;
+document.getElementById('user-balance').innerText = balance + " TL";
+const fruits = ['🍒', '🍋', '🍇', '🍉', '🔔', '7️⃣'];
+const r1 = fruits[Math.floor(Math.random() * fruits.length)];
+const r2 = fruits[Math.floor(Math.random() * fruits.length)];
+const r3 = fruits[Math.floor(Math.random() * fruits.length)];
+document.getElementById('reel1').innerText = r1;
+document.getElementById('reel2').innerText = r2;
+document.getElementById('reel3').innerText = r3;
+if(r1 === r2 && r2 === r3) {
+let win = 200;
+if(r1 === '7️⃣') win = 1000;
+balance += win;
+document.getElementById('slot-status').innerHTML = <span style="color:#00ffcc;">🎉 REKORD QAZANC! +${win} TL</span>;
+} else if(r1 === r2 || r2 === r3 || r1 === r3) {
+balance += 20;
+document.getElementById('slot-status').innerHTML = <span style="color:#ffb300;">💵 Kiçik Qazanc! +20 TL</span>;
+} else {
+document.getElementById('slot-status').innerHTML = <span style="color:#ff3300;">📉 Şansınızı yenidən yoxlayın</span>;
+}
+document.getElementById('user-balance').innerText = balance + " TL";
+}
+// DEPOZİT TƏSDİQLƏMƏ (BOT İLƏ ƏLAQƏ)
+function submitDeposit() {
+const amt = document.getElementById('dep-amount').value;
+alert('Məlumat qəbul olundu! Telegram botuna keçid edin və çekinizi (SS) bota göndərin.');
+tg.sendData("deposit_click_" + amt);
+tg.close();
+}
