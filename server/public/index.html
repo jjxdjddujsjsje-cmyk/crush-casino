@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Telegram Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+    <style>
+        :root {
+            --bg-deep: #0a0814;
+            --bg-panel: rgba(20, 16, 38, 0.82);
+            --bg-panel-hover: rgba(30, 24, 58, 0.9);
+            --accent-purple: #9d4edd;
+            --accent-pink: #f72585;
+            --accent-cyan: #00f5ff;
+            --accent-gold: #ffd700;
+            --text-main: #ffffff;
+            --text-muted: #9d98b3;
+            --success: #00e676;
+            --danger: #ff1744;
+            --shadow-purple: 0 0 24px rgba(157, 78, 221, 0.5);
+            --shadow-pink: 0 0 24px rgba(247, 37, 133, 0.45);
+            --shadow-cyan: 0 0 24px rgba(0, 245, 255, 0.4);
+            --radius: 24px;
+            --radius-sm: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Фон с анимированным свечением */
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 20%, rgba(157, 78, 221, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(247, 37, 133, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 245, 255, 0.05) 0%, transparent 45%);
+            animation: bgPulse 14s ease-in-out infinite;
+            z-index: -2;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.12) rotate(4deg); }
+        }
+
+        /* Оверлей при открытом меню */
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.35s ease;
+            z-index: 90;
+        }
+
+        .menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Боковая шторка */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            max-width: 80vw;
+            background: var(--bg-panel);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-right: 1px solid rgba(157, 78, 221, 0.18);
+            box-shadow: 8px 0 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 22px;
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 18px;
+            box-shadow: var(--shadow-purple);
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 18px;
+            background: linear-gradient(90deg, #fff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-sidebar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(157, 78, 221, 0.25);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-sidebar:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: var(--shadow-cyan);
+        }
+
+        .close-sidebar svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .menu-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            padding-left: 12px;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+        }
+
+        .menu-item svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            background: var(--bg-panel-hover);
+            color: var(--accent-cyan);
+            border-color: rgba(0, 245, 255, 0.2);
+            box-shadow: var(--shadow-cyan);
+            transform: translateX(4px);
+        }
+
+        .menu-item-text {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(0, 245, 255, 0.12);
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* Мобильная кнопка меню */
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 80;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--bg-panel);
+            border: 1px solid rgba(157, 78, 221, 0.25);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+        }
+
+        .hamburger:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: var(--shadow-cyan);
+        }
+
+        .hamburger svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* Главная область */
+        .main {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 24px 24px 40px;
+            transition: transform 0.4s ease;
+        }
+
+        .main::-webkit-scrollbar { width: 0; }
+
+        @media (min-width: 641px) {
+            .main {
+                margin-left: 0;
+                padding: 32px 40px 40px;
+            }
+        }
+
+        /* Экраны */
+        .screen {
+            display: none;
+            min-height: calc(100vh - 80px);
+            animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .screen.active { display: flex; flex-direction: column; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard {
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 12vh;
+            text-align: center;
+        }
+
+        .profile-avatar-xl {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 26px;
+            border: 3px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 0 40px rgba(157, 78, 221, 0.45),
+                0 0 80px rgba(247, 37, 133, 0.2),
+                inset 0 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .profile-avatar-xl::after {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-pink);
+            animation: avatarRotate 6s linear infinite;
+        }
+
+        @keyframes avatarRotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .profile-avatar-xl img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .profile-level {
+            font-size: 14px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 32px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(0, 245, 255, 0.08);
+            border: 1px solid rgba(0, 245, 255, 0.15);
+        }
+
+        .balance-block {
+            margin-bottom: 48px;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .balance-value {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #fff 0%, var(--accent-cyan) 50%, var(--accent-purple) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(0, 245, 255, 0.25);
+            animation: shimmer 4s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        .earn-btn {
+            width: 100%;
+            max-width: 320px;
+            padding: 20px 36px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple), var(--accent-cyan));
+            background-size: 200% auto;
+            box-shadow:
+                0 8px 32px rgba(247, 37, 133, 0.45),
+                0 0 40px rgba(157, 78, 221, 0.3);
+            transition: all 0.3s ease;
+            animation: gradientMove 3s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .earn-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.15), transparent);
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        .earn-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow:
+                0 12px 40px rgba(247, 37, 133, 0.6),
+                0 0 50px rgba(0, 245, 255, 0.4);
+        }
+
+        .earn-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .earn-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            vertical-align: middle;
+            margin-right: 8px;
+            margin-top: -2px;
+        }
+
+        .hint-text {
+            margin-top: 28px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ===== ИГРОВЫЕ ЭКРАНЫ ===== */
+        .game-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--bg-panel);
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: var(--shadow-cyan);
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .game-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .game-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Карточка игры (Glassmorphism) */
+        .game-card {
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(157, 78, 221, 0.18);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+
+        /* Plinko */
+        .plinko-board {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            height: min(420px, 52vh);
+            margin: 0 auto 10px;
+            border-radius: var(--radius);
+            background: linear-gradient(180deg, rgba(20,16,38,0.6) 0%, rgba(10,8,20,0.95) 100%);
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            box-shadow:
+                0 0 30px rgba(157, 78, 221, 0.25),
+                inset 0 0 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .plinko-board canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .plinko-buckets {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+            max-width: 380px;
+            margin: 0 auto 18px;
+            padding: 0 8px;
+        }
+
+        .bucket {
+            text-align: center;
+            padding: 8px 2px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(157, 78, 221, 0.25);
+        }
+
+        .bucket.center {
+            background: rgba(0, 230, 118, 0.12);
+            border-color: rgba(0, 230, 118, 0.4);
+            color: #00e676;
+        }
+
+        .bucket.high {
+            background: rgba(157, 78, 221, 0.18);
+            border-color: rgba(247, 37, 133, 0.4);
+            color: #f72585;
+        }
+
+        .plinko-win-popup {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 10px;
+            background: rgba(0, 0, 0, 0.75);
+            color: var(--accent-gold);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 800;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .plinko-win-popup.show {
+            opacity: 1;
+        }
+
+        .chips-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 18px 0;
+            flex-wrap: wrap;
+        }
+
+        .chips-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 18px 0;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 3px dashed rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 13px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .chip:active { transform: scale(0.92); }
+        .chip.active {
+            transform: scale(1.12);
+            box-shadow: 0 0 0 4px var(--accent-cyan), 0 0 18px var(--accent-cyan);
+        }
+
+        .chip-100 { background: linear-gradient(135deg, #2196f3, #0d47a1); }
+        .chip-500 { background: linear-gradient(135deg, #9c27b0, #4a148c); }
+        .chip-1000 { background: linear-gradient(135deg, #ff9800, #e65100); }
+        .chip-5000 { background: linear-gradient(135deg, #f44336, #b71c1c); }
+
+        .result-display {
+            text-align: center;
+            min-height: 90px;
+            margin-bottom: 6px;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 900;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .result-badge.red { background: linear-gradient(135deg, #ff5252, #d32f2f); }
+        .result-badge.black { background: linear-gradient(135deg, #616161, #212121); }
+        .result-badge.green { background: linear-gradient(135deg, #69f0ae, #388e3c); }
+
+        .result-text {
+            margin-top: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .current-stake {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin: 12px 0;
+        }
+
+        .current-stake strong {
+            color: var(--accent-cyan);
+            font-size: 18px;
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+            box-shadow: 0 4px 16px rgba(247, 37, 133, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(247, 37, 133, 0.55);
+        }
+
+        .btn-cyan {
+            background: linear-gradient(90deg, #00b8d4, var(--accent-cyan));
+            box-shadow: 0 4px 16px rgba(0, 245, 255, 0.3);
+            color: #001018;
+        }
+
+        .btn-cyan:hover {
+            box-shadow: 0 6px 24px rgba(0, 245, 255, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(157, 78, 221, 0.4);
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: var(--shadow-cyan);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Lucky Jet */
+        .crash-canvas {
+            width: 100%;
+            height: 260px;
+            background: linear-gradient(180deg, rgba(10,8,20,0.95), rgba(20,16,38,0.98));
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lucky-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .crash-canvas::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            box-shadow: 0 0 12px var(--accent-cyan);
+        }
+
+        .crash-multiplier {
+            display: none !important;
+        }
+
+        .crash-status {
+            display: none !important;
+        }
+
+        .crash-countdown {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-shadow: var(--shadow-gold);
+            z-index: 10;
+            display: none;
+        }
+
+        .lucky-players {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            z-index: 10;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .lucky-player-bet {
+            background: rgba(157, 78, 221, 0.25);
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.4);
+        }
+
+        .lucky-player-bet.cashed {
+            background: rgba(0, 255, 136, 0.15);
+            border-color: rgba(0, 255, 136, 0.4);
+            color: var(--success);
+        }
+
+        /* Slots */
+        .slots-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 48px;
+            margin: 20px 0;
+        }
+
+        .slot-cell {
+            width: 72px;
+            height: 72px;
+            background: rgba(0,0,0,0.3);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 12px rgba(157, 78, 221, 0.2);
+        }
+
+        /* История */
+        .history-list {
+            margin-top: 18px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(0,0,0,0.15);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .history-win { color: var(--success); font-weight: 700; }
+        .history-loss { color: var(--danger); font-weight: 700; }
+
+        /* Победа */
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 200;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .win-overlay.show { display: flex; }
+
+        .win-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 30px var(--accent-gold);
+            margin-bottom: 12px;
+        }
+
+        .win-amount {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            animation: fall 1.6s linear forwards;
+            z-index: 201;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Тост */
+        .toast {
+            position: fixed;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-panel);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(157, 78, 221, 0.35);
+            box-shadow: var(--shadow-purple);
+            display: none;
+            z-index: 150;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .toast.show { display: block; }
+
+        /* Бонус */
+        .bonus-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bonus-card {
+            background: var(--bg-panel);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid rgba(157, 78, 221, 0.15);
+        }
+
+        .bonus-card h3 {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .bonus-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* Адаптив */
+        @media (max-width: 640px) {
+            .dashboard { padding-top: 8vh; }
+            .profile-avatar-xl { width: 110px; height: 110px; font-size: 42px; }
+            .profile-name { font-size: 24px; }
+            .balance-value { font-size: 38px; }
+            .earn-btn { max-width: 100%; }
+            .game-title { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- Кнопка гамбургер (всегда видна) -->
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <!-- Затемнение фона при открытом меню -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Боковое меню -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon">N</div>
+                <div class="logo-text">Neon Casino</div>
+            </div>
+            <button class="close-sidebar" id="closeSidebar" aria-label="Закрыть меню">
+                <svg viewBox="0 0 24 24"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/></svg>
+            </button>
+        </div>
+
+        <div class="menu-title">Заработать</div>
+        <div class="menu-list">
+            <div class="menu-item" data-screen="plinko">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="2"/></svg>
+                <span class="menu-item-text">Plinko</span>
+                <span class="menu-badge">x100</span>
+            </div>
+            <div class="menu-item" data-screen="luckyjet">
+                <svg viewBox="0 0 24 24"><path d="M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.57-2.26-1.48-.51-1.24.85c-.17.12-.24.34-.17.53.07.19.25.32.45.32h.07l1.4-.31 6.89 2.38 4.56-1.18c.52-.14 1.04.17 1.18.69.13.52-.17 1.05-.69 1.19l-8.03 2.08-4.35-1.5-1.63.36c-.19.04-.36.17-.44.35-.08.18-.06.39.05.55l.67 1.03 6.57 2.26 7.88-2.04c.8-.21 1.28-1.04 1.06-1.84z"/></svg>
+                <span class="menu-item-text">Lucky Jet</span>
+                <span class="menu-badge">x100</span>
+            </div>
+            <div class="menu-item" data-screen="slots">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
+                <span class="menu-item-text">Слоты</span>
+                <span class="menu-badge">x10</span>
+            </div>
+
+            <div style="height: 18px;"></div>
+            <div class="menu-title">Ежедневно</div>
+
+            <div class="menu-item" data-screen="bonus">
+                <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68A2.996 2.996 0 0 0 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zM9 4c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>
+                <span class="menu-item-text">Ежедневный бонус</span>
+            </div>
+            <div class="menu-item" data-screen="tasks">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                <span class="menu-item-text">Рефералы и задания</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Контент -->
+    <main class="main" id="main">
+
+        <!-- ===== DASHBOARD ===== -->
+        <section class="screen active dashboard" id="screen-dashboard">
+            <div class="profile-avatar-xl" id="dashboardAvatar"></div>
+            <div class="profile-name" id="dashboardName">Игрок</div>
+            <div class="profile-level">Уровень 1 (Бронза)</div>
+
+            <div class="balance-block">
+                <div class="balance-label">Ваш баланс</div>
+                <div class="balance-value" id="dashboardBalance">0 TSC</div>
+            </div>
+
+            <div id="debugPanel" style="background:rgba(255,0,0,0.15);color:#ff88aa;padding:8px 12px;border-radius:8px;font-size:11px;margin:10px 0;text-align:center;">Debug: loading...</div>
+
+            <button class="earn-btn" id="earnBtn">
+                <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                Заработать
+            </button>
+
+            <div class="hint-text">Нажмите, чтобы открыть меню игр</div>
+        </section>
+
+        <!-- ===== PLINKO ===== -->
+        <section class="screen" id="screen-plinko">
+            <div class="game-header">
+                <button class="back-btn" onclick="goDashboard()">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <div>
+                    <div class="game-title">Plinko</div>
+                    <div class="game-subtitle">Лавина шариков — падай в x100</div>
+                </div>
+            </div>
+
+            <div class="plinko-board" id="plinkoBoard">
+                <canvas id="plinkoCanvas"></canvas>
+            </div>
+
+            <div class="plinko-buckets" id="plinkoBuckets">
+                <div class="bucket">100x</div>
+                <div class="bucket">50x</div>
+                <div class="bucket">10x</div>
+                <div class="bucket">5x</div>
+                <div class="bucket">0.5x</div>
+                <div class="bucket">5x</div>
+                <div class="bucket">10x</div>
+                <div class="bucket">50x</div>
+                <div class="bucket">100x</div>
+            </div>
+
+            <div class="game-card">
+                <div class="current-stake">
+                    Ставка: <strong id="plinkoCurrentBet">100</strong> TSC
+                </div>
+
+                <div class="chips-row" id="plinkoChips">
+                    <div class="chip chip-100 active" data-value="100">100</div>
+                    <div class="chip chip-500" data-value="500">500</div>
+                    <div class="chip chip-1000" data-value="1000">1K</div>
+                    <div class="chip chip-5000" data-value="5000">5K</div>
+                </div>
+
+                <button class="btn btn-cyan" id="plinkoLaunchBtn">Запустить</button>
+                <button class="btn btn-outline" onclick="goDashboard()">В кабинет</button>
+
+                <div class="history-list" id="plinkoHistory"></div>
+            </div>
+        </section>
+
+        <!-- ===== LUCKY JET ===== -->
+        <section class="screen" id="screen-luckyjet">
+            <div class="game-header">
+                <button class="back-btn" onclick="goDashboard()">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <div>
+                    <div class="game-title">Lucky Jet</div>
+                    <div class="game-subtitle">Общий рейс для всех игроков</div>
+                </div>
+            </div>
+
+            <div class="crash-canvas" id="luckyCanvasContainer">
+                <canvas id="luckyCanvas" class="lucky-canvas"></canvas>
+                <div class="crash-countdown" id="luckyCountdown">Ожидание ставок...</div>
+                <div class="crash-multiplier" id="crashMultiplier">1.00x</div>
+                <div class="crash-status" id="crashStatus"></div>
+                <div class="lucky-players" id="luckyPlayers"></div>
+            </div>
+
+            <div class="game-card">
+                <div class="current-stake">
+                    Ставка: <strong id="luckyBet">100</strong> TSC
+                </div>
+
+                <div class="chips-row">
+                    <div class="chip chip-100" data-value="100" data-target="lucky">100</div>
+                    <div class="chip chip-500" data-value="500" data-target="lucky">500</div>
+                    <div class="chip chip-1000" data-value="1000" data-target="lucky">1K</div>
+                    <div class="chip chip-5000" data-value="5000" data-target="lucky">5K</div>
+                </div>
+
+                <button class="btn btn-cyan" id="luckyPlayBtn" style="margin-bottom: 10px;">Поставить</button>
+                <button class="btn btn-outline" onclick="goDashboard()">В кабинет</button>
+
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 14px;">
+                    Раунд общий для всех игроков. Сделай ставку до старта, затем забери до краша.
+                </p>
+
+                <div class="history-list" id="luckyHistory"></div>
+            </div>
+        </section>
+
+        <!-- ===== SLOTS ===== -->
+        <section class="screen" id="screen-slots">
+            <div class="game-header">
+                <button class="back-btn" onclick="goDashboard()">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <div>
+                    <div class="game-title">Neon Slots</div>
+                    <div class="game-subtitle">Крути барабаны</div>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="slots-row" id="slotsRow">
+                    <div class="slot-cell">❓</div>
+                    <div class="slot-cell">❓</div>
+                    <div class="slot-cell">❓</div>
+                </div>
+
+                <div class="current-stake" style="margin: 14px 0;">
+                    Ставка: <strong id="slotsBet">100</strong> TSC
+                </div>
+
+                <div class="chips-row">
+                    <div class="chip chip-100" data-value="100" data-target="slots">100</div>
+                    <div class="chip chip-500" data-value="500" data-target="slots">500</div>
+                    <div class="chip chip-1000" data-value="1000" data-target="slots">1K</div>
+                    <div class="chip chip-5000" data-value="5000" data-target="slots">5K</div>
+                </div>
+
+                <button class="btn btn-primary" id="slotsSpinBtn" style="margin: 14px 0;">Крутить 🎰</button>
+                <button class="btn btn-outline" onclick="goDashboard()">В кабинет</button>
+
+                <div class="history-list" id="slotsHistory"></div>
+            </div>
+        </section>
+
+        <!-- ===== ЕЖЕДНЕВНЫЙ БОНУС ===== -->
+        <section class="screen" id="screen-bonus">
+            <div class="game-header">
+                <button class="back-btn" onclick="goDashboard()">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <div>
+                    <div class="game-title">Ежедневный бонус</div>
+                    <div class="game-subtitle">Забирай награду каждый день</div>
+                </div>
+            </div>
+
+            <div class="bonus-list">
+                <div class="bonus-card">
+                    <h3>🎁 Дневной бонус</h3>
+                    <p>Получи 5000 TSC раз в час, если баланс на нуле.</p>
+                    <button class="btn btn-primary" id="bonusClaimBtn">Забрать 5000 TSC</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== РЕФЕРАЛЫ И ЗАДАНИЯ ===== -->
+        <section class="screen" id="screen-tasks">
+            <div class="game-header">
+                <button class="back-btn" onclick="goDashboard()">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <div>
+                    <div class="game-title">Рефералы и задания</div>
+                    <div class="game-subtitle">Зарабатывай больше</div>
+                </div>
+            </div>
+
+            <div class="bonus-list">
+                <div class="bonus-card">
+                    <h3>👥 Пригласи друга</h3>
+                    <p>Получи 1000 TSC за каждого друга, который запустил бота.</p>
+                    <button class="btn btn-cyan" onclick="copyRefLink()">Скопировать реферальную ссылку</button>
+                </div>
+
+                <div class="bonus-card">
+                    <h3>🎯 Первый выигрыш</h3>
+                    <p>Сделай любую ставку в Plinko и получи 2000 TSC.</p>
+                    <button class="btn btn-outline" onclick="navigateTo('plinko')">Играть</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Победа -->
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-title">🎉 ПОБЕДА!</div>
+        <div class="win-amount" id="winAmount">+0 TSC</div>
+    </div>
+
+    <!-- Тост -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('#0a0814');
+        tg.setBackgroundColor('#0a0814');
+
+        const state = {
+            balance: 0,
+            luckyChip: 100,
+            slotsChip: 100,
+            baseApiUrl: window.location.origin,
+            history: [],
+            balanceLoaded: false,
+            user: { id: 0, first_name: 'Игрок', username: '', photo_url: '' },
+            telegramInitData: '',
+        };
+
+        // DOM
+        const dashboardAvatar = document.getElementById('dashboardAvatar');
+        const dashboardName = document.getElementById('dashboardName');
+        const dashboardBalance = document.getElementById('dashboardBalance');
+        const luckyBetEl = document.getElementById('luckyBet');
+        const slotsBetEl = document.getElementById('slotsBet');
+        const bonusClaimBtn = document.getElementById('bonusClaimBtn');
+        const toastEl = document.getElementById('toast');
+        const winOverlay = document.getElementById('winOverlay');
+        const winAmountEl = document.getElementById('winAmount');
+        const plinkoHistoryEl = document.getElementById('plinkoHistory');
+        const luckyHistoryEl = document.getElementById('luckyHistory');
+        const slotsHistoryEl = document.getElementById('slotsHistory');
+
+        const sidebar = document.getElementById('sidebar');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const hamburger = document.getElementById('hamburger');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const earnBtn = document.getElementById('earnBtn');
+
+                
+        // Telegram user
+        function initTelegramUser() {
+            try {
+                const initData = tg.initData || '';
+                const initDataUnsafe = tg.initDataUnsafe || {};
+                const initDataLen = initData.length;
+                let user = initDataUnsafe.user;
+
+                // Fallback: если initDataUnsafe.user не заполнен, парсим user из initData
+                if (!user && initData) {
+                    try {
+                        const params = new URLSearchParams(initData);
+                        const userJson = params.get('user');
+                        if (userJson) user = JSON.parse(userJson);
+                    } catch (e) {
+                        console.warn('Failed to parse user from initData', e);
+                    }
+                }
+
+                // Fallback: берём user_id и имя из URL query-параметров
+                const urlParams = new URLSearchParams(window.location.search);
+                const fallbackUserId = urlParams.get('user_id');
+                const fallbackFirstName = urlParams.get('first_name');
+
+                // Сохраняем initData для WebSocket и других нужд
+                state.telegramInitData = initData;
+
+                // Максимально подробный debug
+                const debugInfo = {
+                    hasTelegram: !!window.Telegram,
+                    hasWebApp: !!(window.Telegram && window.Telegram.WebApp),
+                    initDataLen,
+                    initDataFirst50: initData.slice(0, 50),
+                    initDataUnsafeKeys: Object.keys(initDataUnsafe),
+                    userFromInitData: initDataUnsafe.user,
+                    parsedUser: user,
+                    urlUserId: fallbackUserId,
+                    urlFirstName: fallbackFirstName,
+                    fullUrl: window.location.href,
+                    platform: tg.platform,
+                    version: tg.version
+                };
+                console.log('=== Telegram WebApp Debug ===', debugInfo);
+
+                updateDebugPanel(`tg=${!!window.Telegram.WebApp} initLen=${initDataLen} user=${user?.id || 'no'} urlId=${fallbackUserId || 'no'}`);
+
+                if (user && user.id) {
+                    state.user = {
+                        id: user.id,
+                        first_name: user.first_name || 'Игрок',
+                        username: user.username || '',
+                        photo_url: user.photo_url || ''
+                    };
+                } else if (fallbackUserId && fallbackFirstName) {
+                    state.user = {
+                        id: parseInt(fallbackUserId, 10),
+                        first_name: fallbackFirstName,
+                        username: '',
+                        photo_url: ''
+                    };
+                } else {
+                    console.warn('Telegram user data missing!', debugInfo);
+                    dashboardName.textContent = 'Игрок';
+                    dashboardAvatar.innerHTML = 'ИГ';
+                    state.user = { id: 0, first_name: 'Игрок', username: '', photo_url: '' };
+                    return false;
+                }
+
+                updateDebugPanel(`initData: ${initDataLen} chars, user: ${state.user.first_name}, id: ${state.user.id}`);
+
+                const initials = getInitials(state.user.first_name);
+                let avatarHTML;
+                if (state.user.photo_url && state.user.photo_url.startsWith('http')) {
+                    avatarHTML = `<img src="${state.user.photo_url}" alt="avatar" onerror="this.parentElement.textContent='${initials}'; this.remove();">`;
+                } else {
+                    avatarHTML = initials;
+                }
+
+                dashboardAvatar.innerHTML = avatarHTML;
+                dashboardName.textContent = state.user.first_name;
+                return true;
+            } catch (e) {
+                console.error('initTelegramUser error:', e);
+                updateDebugPanel('initTelegramUser error: ' + e.message);
+                dashboardName.textContent = 'Игрок';
+                dashboardAvatar.innerHTML = 'ИГ';
+                state.user = { id: 0, first_name: 'Игрок', username: '', photo_url: '' };
+                return false;
+            }
+        }
+
+        function waitForTelegramUser(maxAttempts = 10) {
+            let attempts = 0;
+            const interval = setInterval(() => {
+                attempts++;
+                if (initTelegramUser() || attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    if (state.user.id) {
+                        loadProfile();
+                    }
+                }
+            }, 300);
+        }
+
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return 'ИГ';
+            const parts = name.trim().split(/\s+/).filter(Boolean);
+            if (parts.length === 0) return 'ИГ';
+            if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
+        function updateDebugPanel(text) {
+            console.log('Debug:', text);
+            const panel = document.getElementById('debugPanel');
+            if (panel) panel.textContent = 'Debug: ' + text;
+        }
+
+        // API
+        async function api(endpoint, options = {}) {
+            const initData = tg.initData || '';
+
+            // Fallback: берём user_id из URL query-параметров, если initData пустой
+            const urlParams = new URLSearchParams(window.location.search);
+            const fallbackUserId = urlParams.get('user_id');
+            const fallbackFirstName = urlParams.get('first_name') || 'Игрок';
+
+            // Добавляем query-параметры ко всем запросам, чтобы сервер мог идентифицировать пользователя
+            let separator = endpoint.includes('?') ? '&' : '?';
+            let urlWithParams = `${state.baseApiUrl}${endpoint}${separator}user_id=${encodeURIComponent(fallbackUserId || '')}&first_name=${encodeURIComponent(fallbackFirstName)}`;
+
+            updateDebugPanel(`initData=${initData.length} chars, user_id=${fallbackUserId || 'none'}`);
+
+            const response = await fetch(urlWithParams, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Telegram-Init-Data': initData,
+                    ...options.headers,
+                },
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const errMsg = data.detail?.message || data.detail || `Ошибка сервера ${response.status}`;
+                updateDebugPanel(`error ${response.status}: ${errMsg}`);
+                throw new Error(errMsg);
+            }
+            return data;
+        }
+
+        function showToast(message) {
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 2500);
+        }
+
+        function formatMoney(amount) {
+            if (amount === null || amount === undefined || isNaN(amount)) return '0';
+            return Number(amount).toLocaleString('ru-RU');
+        }
+
+        // Меню
+        function openMenu() {
+            sidebar.classList.add('open');
+            menuOverlay.classList.add('open');
+        }
+
+        function closeMenu() {
+            sidebar.classList.remove('open');
+            menuOverlay.classList.remove('open');
+        }
+
+        hamburger.addEventListener('click', openMenu);
+        closeSidebar.addEventListener('click', closeMenu);
+        menuOverlay.addEventListener('click', closeMenu);
+        earnBtn.addEventListener('click', openMenu);
+
+        // Навигация
+        function navigateTo(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(n => n.classList.remove('active'));
+            const nav = document.querySelector(`.menu-item[data-screen="${screenId}"]`);
+            if (nav) nav.classList.add('active');
+            closeMenu();
+            window.scrollTo(0, 0);
+                        if (screenId === 'plinko') loadHistory('plinko', plinkoHistoryEl);
+            if (screenId === 'luckyjet') loadHistory('lucky_jet', luckyHistoryEl);
+            if (screenId === 'slots') loadHistory('slots', slotsHistoryEl);
+        }
+
+        window.goDashboard = function() {
+            navigateTo('dashboard');
+        };
+
+        window.copyRefLink = function() {
+            const link = `https://t.me/${state.user.username || 'testpython147bot'}?start=ref${state.user.id || ''}`;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link).then(() => showToast('Ссылка скопирована'));
+            } else {
+                showToast(link);
+            }
+        };
+
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => navigateTo(item.dataset.screen));
+        });
+
+        // Профиль
+        async function loadProfile(retry = 0) {
+            if (!state.user.id) {
+                if (retry < 5) {
+                    setTimeout(() => loadProfile(retry + 1), 300);
+                }
+                return;
+            }
+            try {
+                const profile = await api('/api/user/profile');
+                state.balance = profile.balance;
+                state.balanceLoaded = true;
+                renderBalance();
+                if (document.getElementById('screen-plinko').classList.contains('active')) {
+                    loadHistory('plinko', plinkoHistoryEl);
+                }
+                updateDebugPanel(`profile loaded: ${state.user.first_name}, balance: ${profile.balance}`);
+            } catch (err) {
+                console.error('loadProfile error:', err);
+                updateDebugPanel(`profile error: ${err.message} (retry ${retry})`);
+                if (retry < 3) {
+                    setTimeout(() => loadProfile(retry + 1), 1500);
+                } else if (!state.balanceLoaded) {
+                    showToast('Не удалось загрузить профиль');
+                    state.balanceLoaded = true;
+                }
+            }
+        }
+
+        function renderBalance() {
+            dashboardBalance.textContent = formatMoney(state.balance) + ' TSC';
+        }
+
+        // Фишки Lucky Jet
+        document.querySelectorAll('.chip[data-target="lucky"]').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip[data-target="lucky"]').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.luckyChip = parseInt(chip.dataset.value, 10);
+                luckyBetEl.textContent = formatMoney(state.luckyChip);
+            });
+        });
+
+        // Фишки Slots
+        document.querySelectorAll('.chip[data-target="slots"]').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip[data-target="slots"]').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.slotsChip = parseInt(chip.dataset.value, 10);
+                slotsBetEl.textContent = formatMoney(state.slotsChip);
+            });
+        });
+
+        // Plinko — одиночная игра с лавиной шариков через HTTP API
+        const plinkoCanvas = document.getElementById('plinkoCanvas');
+        const plinkoCurrentBetEl = document.getElementById('plinkoCurrentBet');
+        const plinkoLaunchBtn = document.getElementById('plinkoLaunchBtn');
+        const plinkoChips = document.querySelectorAll('#plinkoChips .chip');
+        const plinkoHistoryEl = document.getElementById('plinkoHistory');
+        const plinkoBucketsEl = document.getElementById('plinkoBuckets');
+
+        let plinkoChip = 100;
+        const PLINKO_BUCKETS = 9;
+        const PLINKO_MULTIPLIERS = [100, 50, 10, 5, 0.5, 5, 10, 50, 100];
+        const PLINKO_ROWS = 12;
+
+        // Настройки физики Canvas
+        const plinkoState = {
+            balls: [],
+            pending: new Map(), // ballId -> { betAmount, startX, path }
+            pegs: [],
+            width: 0,
+            height: 0,
+            bucketWidth: 0,
+            pegRadius: 3.5,
+            ballRadius: 5,
+            rowGap: 0,
+            colGap: 0,
+        };
+
+        function initPlinkoCanvas() {
+            const rect = plinkoCanvas.parentElement.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            plinkoCanvas.width = rect.width * dpr;
+            plinkoCanvas.height = rect.height * dpr;
+            plinkoCanvas.style.width = rect.width + 'px';
+            plinkoCanvas.style.height = rect.height + 'px';
+
+            const ctx = plinkoCanvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            plinkoState.width = rect.width;
+            plinkoState.height = rect.height;
+            plinkoState.bucketWidth = plinkoState.width / PLINKO_BUCKETS;
+
+            // Расставляем штырьки треугольником
+            plinkoState.pegs = [];
+            const topOffset = 40;
+            const bottomOffset = 70;
+            const usableHeight = plinkoState.height - topOffset - bottomOffset;
+            plinkoState.rowGap = usableHeight / (PLINKO_ROWS + 1);
+
+            for (let row = 0; row < PLINKO_ROWS; row++) {
+                const count = row + 3; // от 3 до 14 штырьков
+                const totalWidth = (count - 1) * (plinkoState.width / (PLINKO_ROWS + 2));
+                const startX = (plinkoState.width - totalWidth) / 2;
+                for (let col = 0; col < count; col++) {
+                    plinkoState.pegs.push({
+                        x: startX + col * (plinkoState.width / (PLINKO_ROWS + 2)),
+                        y: topOffset + row * plinkoState.rowGap,
+                    });
+                }
+            }
+
+            requestAnimationFrame(drawPlinkoFrame);
+        }
+
+        function drawPlinkoFrame() {
+            const ctx = plinkoCanvas.getContext('2d');
+            const { width, height } = plinkoState;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Рисуем штырьки
+            ctx.fillStyle = 'rgba(157, 78, 221, 0.85)';
+            ctx.shadowColor = 'rgba(157, 78, 221, 0.6)';
+            ctx.shadowBlur = 6;
+            for (const peg of plinkoState.pegs) {
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, plinkoState.pegRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+
+            // Рисуем шарики
+            for (const ball of plinkoState.balls) {
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, plinkoState.ballRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.shadowColor = 'rgba(255,255,255,0.7)';
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Обновляем физику
+            updatePlinkoBalls();
+
+            requestAnimationFrame(drawPlinkoFrame);
+        }
+
+        function updatePlinkoBalls() {
+            const g = 0.45;
+            const bounce = 0.65;
+            const floorY = plinkoState.height - 55;
+
+            for (let i = plinkoState.balls.length - 1; i >= 0; i--) {
+                const ball = plinkoState.balls[i];
+
+                ball.vy += g;
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+
+                // Отскок от штырьков
+                for (const peg of plinkoState.pegs) {
+                    const dx = ball.x - peg.x;
+                    const dy = ball.y - peg.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = plinkoState.pegRadius + plinkoState.ballRadius;
+                    if (dist < minDist && dist > 0) {
+                        // Отталкиваем
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        const overlap = minDist - dist;
+                        ball.x += nx * overlap;
+                        ball.y += ny * overlap;
+                        // Отражаем скорость
+                        const dot = ball.vx * nx + ball.vy * ny;
+                        ball.vx -= 2 * dot * nx;
+                        ball.vy -= 2 * dot * ny;
+                        ball.vx *= bounce;
+                        ball.vy *= bounce;
+                        // Добавляем случайный импульс влево/вправо
+                        ball.vx += (Math.random() - 0.5) * 1.2;
+                    }
+                }
+
+                // Стены
+                if (ball.x < plinkoState.ballRadius) {
+                    ball.x = plinkoState.ballRadius;
+                    ball.vx *= -0.6;
+                }
+                if (ball.x > plinkoState.width - plinkoState.ballRadius) {
+                    ball.x = plinkoState.width - plinkoState.ballRadius;
+                    ball.vx *= -0.6;
+                }
+
+                // Достигли пола
+                if (!ball.settled && ball.y >= floorY) {
+                    settlePlinkoBall(ball, i);
+                }
+            }
+        }
+
+        function settlePlinkoBall(ball, index) {
+            ball.settled = true;
+            ball.vx = 0;
+            ball.vy = 0;
+            ball.y = plinkoState.height - 40;
+
+            // Если ответ с сервера ещё не пришёл — плавно пододвигаем к центру целевой лузы
+            if (!ball.serverResult) {
+                return;
+            }
+
+            const bucket = ball.serverResult.bucket_index;
+            const targetX = bucket * plinkoState.bucketWidth + plinkoState.bucketWidth / 2;
+
+            // Плавно двигаем к центру лузы
+            const move = () => {
+                const dx = targetX - ball.x;
+                if (Math.abs(dx) < 1) {
+                    ball.x = targetX;
+                    finishPlinkoBall(ball, index);
+                    return;
+                }
+                ball.x += dx * 0.12;
+                requestAnimationFrame(move);
+            };
+            move();
+        }
+
+        function finishPlinkoBall(ball, index) {
+            if (ball.finished) return;
+            ball.finished = true;
+
+            const result = ball.serverResult;
+            if (!result) return;
+
+            const net = result.win_amount - result.bet_amount;
+            if (net > 0) {
+                state.balance += net;
+                animateBalanceChange(net);
+                showWinOverlay('+' + formatMoney(net) + ' TSC');
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            } else if (net < 0) {
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            }
+
+            renderBalance();
+            addPlinkoHistory(result);
+
+            // Удаляем через задержку, чтобы не мешать новым шарикам
+            setTimeout(() => {
+                const idx = plinkoState.balls.indexOf(ball);
+                if (idx >= 0) plinkoState.balls.splice(idx, 1);
+            }, 1200);
+        }
+
+        function spawnPlinkoBall(betAmount, serverResult = null) {
+            const startX = plinkoState.width / 2 + (Math.random() - 0.5) * 20;
+            const ball = {
+                x: startX,
+                y: 12,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: 0,
+                settled: false,
+                finished: false,
+                serverResult: serverResult,
+                betAmount: betAmount,
+            };
+            plinkoState.balls.push(ball);
+            return ball;
+        }
+
+        async function launchPlinko() {
+            const bet = plinkoChip;
+            if (bet > state.balance) {
+                showToast('Недостаточно средств');
+                return;
+            }
+
+            // Мгновенно списываем с визуального баланса и запускаем шарик
+            state.balance -= bet;
+            renderBalance();
+            const localBall = spawnPlinkoBall(bet, null);
+
+            plinkoLaunchBtn.disabled = true;
+            try {
+                const res = await api('/api/plinko/bet', {
+                    method: 'POST',
+                    body: JSON.stringify({ bet_amount: bet }),
+                });
+
+                state.balance = res.balance;
+                renderBalance();
+
+                localBall.serverResult = res;
+
+                // Если шарик уже упал, сразу доводим до нужной лузы
+                if (localBall.settled) {
+                    settlePlinkoBall(localBall, plinkoState.balls.indexOf(localBall));
+                }
+            } catch (err) {
+                showToast(err.message || 'Ошибка Plinko');
+                // Возвращаем ставку, если неудачно
+                state.balance += bet;
+                renderBalance();
+                const idx = plinkoState.balls.indexOf(localBall);
+                if (idx >= 0) plinkoState.balls.splice(idx, 1);
+            } finally {
+                plinkoLaunchBtn.disabled = false;
+            }
+        }
+
+        plinkoLaunchBtn.addEventListener('click', () => launchPlinko());
+
+        plinkoChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                plinkoChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                plinkoChip = parseInt(chip.dataset.value, 10);
+                plinkoCurrentBetEl.textContent = formatMoney(plinkoChip);
+            });
+        });
+
+        function addPlinkoHistory(result) {
+            const label = `Луза ${result.bucket_index + 1} — x${result.multiplier}`;
+            const net = result.win_amount - result.bet_amount;
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <span>${label}</span>
+                <span class="${net >= 0 ? 'history-win' : 'history-loss'}">${net >= 0 ? '+' : ''}${formatMoney(net)}</span>
+            `;
+            plinkoHistoryEl.insertBefore(div, plinkoHistoryEl.firstChild);
+        }
+
+        // Lucky Jet — WebSocket Multiplayer Crash Game
+
+        // Lucky Jet — WebSocket Multiplayer Crash Game
+
+        // Состояние игры (список игроков, моя ставка)
+        let luckyState = {
+            roundId: null,
+            myBet: null,
+            players: [],
+        };
+
+        class LuckyJetCanvas {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.state = 'WAITING'; // WAITING | FLYING | CRASHED
+                this.multiplier = 1.0;
+                this.countdown = 7.0;
+                this.crashMultiplier = null;
+                this.cashoutInfo = null; // { amount, multiplier, winAmount }
+
+                this.rocket = {
+                    introProgress: 0,
+                    phase: 0,
+                    hover: 0,
+                    crashFlyProgress: 0,
+                    crashedAt: 0,
+                    x: 0,
+                    y: 0,
+                    angle: -0.3,
+                    scale: 1,
+                    shakeX: 0,
+                    shakeY: 0
+                };
+
+                this.particles = [];
+
+                this.bgOffsetX = 0;
+                this.bgOffsetY = 0;
+                this.lastFrameTime = performance.now();
+                this.animId = null;
+
+                this.stars = [];
+                for (let i = 0; i < 80; i++) {
+                    this.stars.push({
+                        x: Math.random(),
+                        y: Math.random(),
+                        size: 0.5 + Math.random() * 2,
+                        speed: 0.2 + Math.random() * 0.8,
+                        alpha: 0.2 + Math.random() * 0.8
+                    });
+                }
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.start();
+            }
+
+            resize() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            start() {
+                if (this.animId) cancelAnimationFrame(this.animId);
+                this.lastFrameTime = performance.now();
+                this.animId = requestAnimationFrame((t) => this.frame(t));
+            }
+
+            setState(newState) {
+                if (this.state === newState) return;
+                this.state = newState;
+
+                if (newState === 'WAITING') {
+                    this.rocket.introProgress = 0;
+                    this.rocket.crashFlyProgress = 0;
+                    this.cashoutInfo = null;
+                } else if (newState === 'FLYING') {
+                    this.rocket.introProgress = 0;
+                    this.rocket.crashFlyProgress = 0;
+                    this.lastFrameTime = performance.now();
+                } else if (newState === 'CRASHED') {
+                    this.rocket.crashedAt = performance.now();
+                }
+            }
+
+            setMultiplier(val) {
+                this.multiplier = val;
+            }
+
+            setCountdown(val) {
+                this.countdown = val;
+            }
+
+            setCrashMultiplier(val) {
+                this.crashMultiplier = val;
+            }
+
+            setCashout(amount, multiplier, winAmount) {
+                this.cashoutInfo = { amount, multiplier, winAmount };
+            }
+
+            easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+            easeInQuad(t) { return t * t; }
+
+            frame(timestamp) {
+                const dt = timestamp - this.lastFrameTime;
+                this.lastFrameTime = timestamp;
+
+                this.updateRocket(dt, timestamp);
+                this.updateParticles(dt);
+                this.drawBackground();
+                this.drawParticles();
+                this.drawRocket();
+                this.drawOverlay();
+
+                this.animId = requestAnimationFrame((t) => this.frame(t));
+            }
+
+            updateParticles(dt) {
+                // Уменьшаем жизнь частиц
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.life -= dt / 1000;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.radius *= 0.985;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+
+                // Генерируем новые частицы только в полёте или на старте
+                if (this.state === 'FLYING' || this.state === 'WAITING') {
+                    const emissionRate = this.state === 'FLYING' ? 3 + Math.min(8, this.multiplier * 0.8) : 1;
+                    for (let i = 0; i < emissionRate; i++) {
+                        this.spawnParticle();
+                    }
+                }
+            }
+
+            spawnParticle() {
+                const colors = [
+                    'rgba(0, 245, 255, ',   // бирюза
+                    'rgba(157, 78, 221, ',  // фиолет
+                    'rgba(255, 0, 128, ',   // розовый
+                    'rgba(255, 100, 50, '    // оранж
+                ];
+                const baseAngle = this.rocket.angle + Math.PI; // назад от ракеты
+                const spread = 0.5 + Math.random() * 0.5;
+                const speed = 1.5 + Math.random() * 3 + (this.state === 'FLYING' ? this.multiplier * 0.3 : 0);
+                const angle = baseAngle + (Math.random() - 0.5) * spread;
+
+                this.particles.push({
+                    x: this.rocket.x - Math.cos(this.rocket.angle) * 18,
+                    y: this.rocket.y - Math.sin(this.rocket.angle) * 18,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    radius: 2 + Math.random() * 4,
+                    life: 0.4 + Math.random() * 0.3,
+                    colorBase: colors[Math.floor(Math.random() * colors.length)],
+                    maxLife: 0.7
+                });
+            }
+
+            drawParticles() {
+                const ctx = this.ctx;
+                for (const p of this.particles) {
+                    const alpha = Math.max(0, p.life / p.maxLife);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.colorBase + alpha + ')';
+                    ctx.fill();
+                }
+            }
+
+            updateRocket(dt, timestamp) {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                if (this.state === 'WAITING') {
+                    this.rocket.phase += dt * 0.002;
+                    this.rocket.hover += dt * 0.003;
+
+                    // Прогрев двигателя: слегка подрагивает
+                    const shake = Math.sin(timestamp * 0.02) * 1.5;
+                    this.rocket.shakeX = (Math.random() - 0.5) * 0.8;
+                    this.rocket.shakeY = (Math.random() - 0.5) * 0.8;
+                    this.rocket.x = w * 0.12 + shake + this.rocket.shakeX;
+                    this.rocket.y = h * 0.75 + Math.cos(this.rocket.hover) * 3 + this.rocket.shakeY;
+                    this.rocket.angle = -0.3 + Math.sin(this.rocket.phase) * 0.04;
+                    this.rocket.scale = 1;
+
+                } else if (this.state === 'FLYING') {
+                    if (this.rocket.introProgress < 1) {
+                        this.rocket.introProgress += dt / 2500;
+                        if (this.rocket.introProgress > 1) this.rocket.introProgress = 1;
+                    }
+
+                    this.rocket.phase += dt * 0.003;
+                    this.rocket.hover += dt * 0.004;
+
+                    const t = this.easeOutCubic(this.rocket.introProgress);
+                    const baseX = w * (0.12 + t * 0.60);
+                    const baseY = h * (0.75 - t * 0.40);
+
+                    // Динамический угол: чем выше множитель, тем сильнее нос вверх
+                    const baseAngle = -0.3 - t * 0.25;
+                    const multiplierPitch = -Math.min(0.9, Math.max(0, (this.multiplier - 1) * 0.12));
+
+                    // Тряска от скорости
+                    const shakeIntensity = 0.5 + Math.min(1.5, (this.multiplier - 1) * 0.15);
+                    this.rocket.shakeX = (Math.random() - 0.5) * shakeIntensity;
+                    this.rocket.shakeY = (Math.random() - 0.5) * shakeIntensity;
+
+                    this.rocket.x = baseX + Math.sin(this.rocket.phase) * (w * 0.03) + this.rocket.shakeX;
+                    this.rocket.y = baseY + Math.sin(this.rocket.hover) * 8 + this.rocket.shakeY;
+                    this.rocket.angle = baseAngle + multiplierPitch + Math.sin(this.rocket.phase) * 0.06;
+                    this.rocket.scale = 1 + Math.max(0, (this.multiplier - 1) * 0.015);
+
+                } else if (this.state === 'CRASHED') {
+                    const elapsed = timestamp - this.rocket.crashedAt;
+                    this.rocket.crashFlyProgress = Math.min(1, elapsed / 300);
+                    const t = this.easeInQuad(this.rocket.crashFlyProgress);
+
+                    this.rocket.shakeX = (Math.random() - 0.5) * 3;
+                    this.rocket.shakeY = (Math.random() - 0.5) * 3;
+                    this.rocket.x = w * (0.72 + t * 0.45) + this.rocket.shakeX;
+                    this.rocket.y = h * (0.35 - t * 0.65) + this.rocket.shakeY;
+                    this.rocket.angle = -0.55 - t * 0.5;
+                    this.rocket.scale = Math.max(0.1, 1 - t * 0.3);
+                }
+            }
+
+            drawBackground() {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                const ctx = this.ctx;
+
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, 'rgba(10,8,20,0.98)');
+                grad.addColorStop(1, 'rgba(20,16,38,0.99)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+
+                const speed = Math.max(0.3, (this.multiplier - 1) * 0.35 + 0.3);
+                this.bgOffsetX += speed * 1.2;
+                this.bgOffsetY += speed * 0.7;
+
+                // Сетка
+                ctx.strokeStyle = 'rgba(157, 78, 221, 0.12)';
+                ctx.lineWidth = 1;
+                const gridSize = 40;
+                const offX = -(this.bgOffsetX % gridSize);
+                const offY = -(this.bgOffsetY % gridSize);
+
+                for (let x = offX; x < w; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h);
+                    ctx.stroke();
+                }
+                for (let y = offY; y < h; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.stroke();
+                }
+
+                // Звёзды
+                this.stars.forEach(star => {
+                    let sx = (star.x * w - this.bgOffsetX * star.speed * 0.5) % w;
+                    let sy = (star.y * h + this.bgOffsetY * star.speed * 0.3) % h;
+                    if (sx < 0) sx += w;
+                    if (sy < 0) sy += h;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${star.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Линия горизонта
+                ctx.strokeStyle = 'rgba(0, 245, 255, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = 'rgba(0, 245, 255, 0.5)';
+                ctx.beginPath();
+                ctx.moveTo(0, h - 1);
+                ctx.lineTo(w, h - 1);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            drawRocket() {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.translate(this.rocket.x, this.rocket.y);
+                ctx.rotate(this.rocket.angle);
+                ctx.scale(this.rocket.scale, this.rocket.scale);
+
+                // Glow вокруг ракеты
+                ctx.shadowBlur = 18;
+                ctx.shadowColor = 'rgba(0, 245, 255, 0.5)';
+
+                // Мощный реактивный хвост (градиент)
+                const flameLength = 35 + Math.random() * 20 + (this.state === 'FLYING' ? Math.min(25, this.multiplier * 2) : 0);
+                const flameGrad = ctx.createLinearGradient(-20, 0, -20 - flameLength, 0);
+                flameGrad.addColorStop(0, 'rgba(0, 245, 255, 0.95)');
+                flameGrad.addColorStop(0.35, 'rgba(157, 78, 221, 0.75)');
+                flameGrad.addColorStop(0.7, 'rgba(255, 0, 128, 0.45)');
+                flameGrad.addColorStop(1, 'rgba(255, 100, 50, 0)');
+                ctx.fillStyle = flameGrad;
+                ctx.beginPath();
+                ctx.moveTo(-14, -7);
+                ctx.lineTo(-14 - flameLength, 0);
+                ctx.lineTo(-14, 7);
+                ctx.fill();
+
+                // Тело ракеты (футуристичный корпус)
+                const bodyGrad = ctx.createLinearGradient(-22, 0, 22, 0);
+                bodyGrad.addColorStop(0, 'rgba(200, 200, 255, 0.9)');
+                bodyGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.95)');
+                bodyGrad.addColorStop(1, 'rgba(180, 180, 240, 0.9)');
+                ctx.fillStyle = bodyGrad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 24, 11, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Кабина / иллюминатор с ярким свечением
+                ctx.shadowBlur = 22;
+                ctx.shadowColor = '#00f5ff';
+                ctx.fillStyle = '#00f5ff';
+                ctx.beginPath();
+                ctx.arc(10, -2, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Крылья (фиолетовые)
+                ctx.fillStyle = '#9d4edd';
+                ctx.beginPath();
+                ctx.moveTo(-8, 6);
+                ctx.lineTo(-20, 20);
+                ctx.lineTo(-4, 11);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-8, -6);
+                ctx.lineTo(-20, -20);
+                ctx.lineTo(-4, -11);
+                ctx.fill();
+
+                // Неоновая аура контура
+                ctx.shadowBlur = 16;
+                ctx.shadowColor = 'rgba(157, 78, 221, 0.8)';
+                ctx.strokeStyle = 'rgba(0, 245, 255, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 26, 13, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                ctx.restore();
+            }
+
+            drawOverlay() {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                const ctx = this.ctx;
+
+                if (this.state === 'WAITING') {
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    ctx.font = 'bold 22px Segoe UI, sans-serif';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(157, 78, 221, 0.8)';
+                    ctx.fillText('До старта: ' + this.countdown.toFixed(1) + 'с', w / 2, h * 0.25);
+                    ctx.shadowBlur = 0;
+
+                    ctx.font = '14px Segoe UI, sans-serif';
+                    ctx.fillStyle = 'rgba(200, 200, 255, 0.6)';
+                    ctx.fillText('Делайте ставки', w / 2, h * 0.32);
+                    ctx.restore();
+                }
+
+                if (this.state === 'FLYING') {
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    const fontSize = 42 + Math.max(0, (this.multiplier - 1)) * 2;
+                    ctx.font = `bold ${fontSize}px Segoe UI, sans-serif`;
+
+                    const glow = 10 + Math.max(0, (this.multiplier - 1)) * 2;
+                    ctx.shadowBlur = glow;
+                    ctx.shadowColor = 'rgba(0, 245, 255, 0.9)';
+                    ctx.fillStyle = '#00f5ff';
+                    ctx.fillText(this.multiplier.toFixed(2) + 'x', w / 2, h * 0.25);
+                    ctx.shadowBlur = 0;
+
+                    if (this.cashoutInfo) {
+                        ctx.font = 'bold 16px Segoe UI, sans-serif';
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = 'rgba(0, 255, 136, 0.7)';
+                        ctx.fillStyle = '#00ff88';
+                        ctx.fillText(`Забрано ${formatMoney(this.cashoutInfo.winAmount)} TSC`, w / 2, h * 0.36);
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.restore();
+                }
+
+                if (this.state === 'CRASHED') {
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    ctx.font = 'bold 42px Segoe UI, sans-serif';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(255, 0, 80, 0.9)';
+                    ctx.fillStyle = '#ff5080';
+                    ctx.fillText('УЛЕТЕЛА!', w / 2, h * 0.35);
+                    ctx.shadowBlur = 0;
+
+                    if (this.crashMultiplier) {
+                        ctx.font = 'bold 22px Segoe UI, sans-serif';
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.fillText(this.crashMultiplier.toFixed(2) + 'x', w / 2, h * 0.48);
+                    }
+                    ctx.restore();
+                }
+            }
+        }
+
+        // Инициализация Canvas
+        const luckyCanvas = document.getElementById('luckyCanvas');
+        let luckyCanvasApp = null;
+        function initLuckyCanvas() {
+            if (!luckyCanvasApp) {
+                luckyCanvasApp = new LuckyJetCanvas(luckyCanvas);
+            } else {
+                luckyCanvasApp.resize();
+            }
+        }
+        const crashStatusEl = document.getElementById('crashStatus');
+        const crashMultiplierEl = document.getElementById('crashMultiplier');
+        const luckyCountdownEl = document.getElementById('luckyCountdown');
+        const luckyPlayersEl = document.getElementById('luckyPlayers');
+
+        // WebSocket соединение
+        let luckyWs = null;
+        let luckyWsReconnectTimer = null;
+
+        function getLuckyWsUrl() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = state.baseApiUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            const params = new URLSearchParams();
+            if (state.telegramInitData) params.set('init_data', state.telegramInitData);
+            else if (state.user && state.user.id) {
+                params.set('user_id', String(state.user.id));
+                params.set('first_name', state.user.first_name || 'Игрок');
+            }
+            return `${protocol}//${host}/ws/lucky?${params.toString()}`;
+        }
+
+        // ... функции WebSocket и UI ...
+
+        // Открываем WebSocket и Canvas, когда заходим на экран Lucky Jet
+        const originalNavigateTo = navigateTo;
+        navigateTo = function(screenId) {
+            originalNavigateTo(screenId);
+            if (screenId === 'luckyjet') {
+                // Небольшая задержка, чтобы экран отрендерился
+                setTimeout(() => {
+                    initLuckyCanvas();
+                    connectLuckyWs();
+                    loadHistory('lucky_jet', luckyHistoryEl);
+                }, 50);
+            }
+        };
+
+        function connectLuckyWs() {
+            if (luckyWs && (luckyWs.readyState === WebSocket.CONNECTING || luckyWs.readyState === WebSocket.OPEN)) return;
+
+            try {
+                luckyWs = new WebSocket(getLuckyWsUrl());
+
+                luckyWs.onopen = () => {
+                    if (luckyCanvasApp) luckyCanvasApp.setState('WAITING');
+                    console.log('[Lucky WS] connected');
+                };
+
+                luckyWs.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    if (!luckyCanvasApp) initLuckyCanvas();
+                    handleLuckyMessage(msg);
+                };
+
+                luckyWs.onclose = () => {
+                    console.log('[Lucky WS] disconnected');
+                    if (luckyWsReconnectTimer) clearTimeout(luckyWsReconnectTimer);
+                    luckyWsReconnectTimer = setTimeout(connectLuckyWs, 2000);
+                };
+
+                luckyWs.onerror = (err) => {
+                    console.error('[Lucky WS] error', err);
+                };
+            } catch (e) {
+                console.error('[Lucky WS] connect error', e);
+            }
+        }
+
+        function handleLuckyMessage(msg) {
+            switch (msg.type) {
+                case 'state':
+                    syncLuckyState(msg.round);
+                    break;
+
+                case 'round_start':
+                    luckyState.state = 'betting';
+                    luckyState.myBet = null;
+                    luckyState.players = [];
+                    luckyCanvasApp.setState('WAITING');
+                    luckyCanvasApp.setMultiplier(1.0);
+                    luckyCanvasApp.setCrashMultiplier(null);
+                    luckyCanvasApp.setCashout(null, null, null);
+                    luckyCanvasApp.setCountdown(msg.countdown_seconds || 7);
+                    updateLuckyUI('WAITING', 1.0, msg.countdown_seconds || 7);
+                    break;
+
+                case 'flight_start':
+                    luckyState.state = 'flying';
+                    luckyCanvasApp.setState('FLYING');
+                    luckyCanvasApp.setCrashMultiplier(msg.crash_multiplier);
+                    updateLuckyUI('FLYING', 1.0, 0, msg.crash_multiplier);
+                    break;
+
+                case 'tick':
+                    luckyCanvasApp.setMultiplier(msg.multiplier);
+                    updateLuckyUI('FLYING', msg.multiplier, 0, luckyCanvasApp.crashMultiplier);
+                    break;
+
+                case 'bet_placed':
+                    if (!luckyState.players.find(p => p.telegram_id === msg.telegram_id)) {
+                        luckyState.players.push({
+                            telegram_id: msg.telegram_id,
+                            first_name: msg.first_name,
+                            amount: msg.amount,
+                            cashed_out: false,
+                            cashout_multiplier: null,
+                        });
+                    }
+                    if (msg.telegram_id === state.user.id) {
+                        luckyState.myBet = {
+                            amount: msg.amount,
+                            cashedOut: false,
+                            cashoutMultiplier: null,
+                            winAmount: 0,
+                        };
+                    }
+                    updateLuckyUI();
+                    break;
+
+                case 'cashout':
+                    const player = luckyState.players.find(p => p.telegram_id === msg.telegram_id);
+                    if (player) {
+                        player.cashed_out = true;
+                        player.cashout_multiplier = msg.multiplier;
+                        player.win_amount = msg.win_amount;
+                    }
+                    if (msg.telegram_id === state.user.id && luckyState.myBet) {
+                        luckyState.myBet.cashedOut = true;
+                        luckyState.myBet.cashoutMultiplier = msg.multiplier;
+                        luckyState.myBet.winAmount = msg.win_amount;
+                        luckyCanvasApp.setCashout(luckyState.myBet.amount, msg.multiplier, msg.win_amount);
+                        state.balance = msg.balance || state.balance;
+                        renderBalance();
+                        showToast(`Забрано ${formatMoney(msg.win_amount)} TSC при x${msg.multiplier}`);
+                        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    }
+                    updateLuckyUI();
+                    loadHistory('lucky_jet', luckyHistoryEl);
+                    break;
+
+                case 'crash':
+                    luckyState.state = 'crashed';
+                    luckyCanvasApp.setState('CRASHED');
+                    luckyCanvasApp.setCrashMultiplier(msg.crash_multiplier);
+                    updateLuckyUI('CRASHED', msg.crash_multiplier, 0, msg.crash_multiplier);
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                    loadHistory('lucky_jet', luckyHistoryEl);
+                    break;
+
+                case 'balance_update':
+                    state.balance = msg.balance;
+                    renderBalance();
+                    break;
+
+                case 'error':
+                    showToast('Ошибка: ' + msg.message);
+                    break;
+            }
+        }
+
+        function syncLuckyState(round) {
+            luckyState.roundId = round.round_id;
+            luckyState.state = round.state;
+            luckyState.players = (round.bets || []).map(b => ({
+                telegram_id: b.telegram_id,
+                first_name: b.first_name,
+                amount: b.amount,
+                cashed_out: b.cashed_out,
+                cashout_multiplier: b.cashout_multiplier,
+                win_amount: b.win_amount,
+            }));
+
+            const my = luckyState.players.find(p => p.telegram_id === state.user.id);
+            if (my) {
+                luckyState.myBet = {
+                    amount: my.amount,
+                    cashedOut: my.cashed_out,
+                    cashoutMultiplier: my.cashout_multiplier,
+                    winAmount: my.win_amount,
+                };
+                if (my.cashed_out) {
+                    luckyCanvasApp.setCashout(my.amount, my.cashout_multiplier, my.win_amount);
+                }
+            }
+
+            if (round.state === 'betting') {
+                luckyCanvasApp.setState('WAITING');
+                luckyCanvasApp.setMultiplier(round.current_multiplier);
+                luckyCanvasApp.setCrashMultiplier(null);
+                updateLuckyUI('WAITING', round.current_multiplier, luckyCanvasApp.countdown);
+            } else if (round.state === 'flying') {
+                luckyCanvasApp.setState('FLYING');
+                luckyCanvasApp.setMultiplier(round.current_multiplier);
+                luckyCanvasApp.setCrashMultiplier(round.crash_multiplier);
+                updateLuckyUI('FLYING', round.current_multiplier, 0, round.crash_multiplier);
+            } else if (round.state === 'crashed' || round.state === 'finished') {
+                luckyCanvasApp.setState('CRASHED');
+                luckyCanvasApp.setMultiplier(round.current_multiplier);
+                luckyCanvasApp.setCrashMultiplier(round.crash_multiplier);
+                updateLuckyUI('CRASHED', round.current_multiplier, 0, round.crash_multiplier);
+            }
+        }
+
+        function updateLuckyUI(stateName, multiplier, countdown, crashMultiplier) {
+            // Кнопка
+            if (luckyState.state === 'betting') {
+                const canBet = !luckyState.myBet;
+                luckyPlayBtn.disabled = !canBet || state.balance < state.luckyChip;
+                luckyPlayBtn.textContent = canBet ? 'Поставить' : 'Ставка принята';
+                luckyPlayBtn.className = canBet ? 'btn btn-cyan' : 'btn btn-outline';
+            } else if (luckyState.state === 'flying') {
+                if (luckyState.myBet && !luckyState.myBet.cashedOut) {
+                    luckyPlayBtn.disabled = false;
+                    luckyPlayBtn.textContent = `Забрать ${(luckyState.myBet.amount * luckyCanvasApp.multiplier).toFixed(0)} TSC`;
+                    luckyPlayBtn.className = 'btn btn-primary';
+                } else {
+                    luckyPlayBtn.disabled = true;
+                    luckyPlayBtn.textContent = luckyState.myBet ? 'Забрано' : 'Нет ставки';
+                    luckyPlayBtn.className = 'btn btn-outline';
+                }
+            } else {
+                luckyPlayBtn.disabled = false;
+                luckyPlayBtn.textContent = 'Поставить';
+                luckyPlayBtn.className = 'btn btn-cyan';
+            }
+
+            renderLuckyPlayers();
+        }
+
+        function renderLuckyPlayers() {
+            luckyPlayersEl.innerHTML = '';
+            luckyState.players.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'lucky-player-bet' + (p.cashed_out ? ' cashed' : '');
+                const name = p.first_name || 'Игрок';
+                if (p.cashed_out) {
+                    div.textContent = `${name}: x${p.cashout_multiplier.toFixed(2)} +${formatMoney(p.win_amount)}`;
+                } else {
+                    div.textContent = `${name}: ${formatMoney(p.amount)} TSC`;
+                }
+                luckyPlayersEl.appendChild(div);
+            });
+        }
+
+        // Кнопка ставки / вывода
+        luckyPlayBtn.addEventListener('click', () => {
+            if (!luckyWs || luckyWs.readyState !== WebSocket.OPEN) {
+                showToast('Нет соединения с сервером');
+                return;
+            }
+
+            if (luckyState.state === 'betting') {
+                if (luckyState.myBet) {
+                    showToast('Ставка уже принята');
+                    return;
+                }
+
+                const amount = state.luckyChip;
+                if (state.balance < amount) {
+                    showToast('Недостаточно монет');
+                    return;
+                }
+
+                luckyWs.send(JSON.stringify({ action: 'place_bet', amount }));
+                luckyPlayBtn.disabled = true;
+                luckyPlayBtn.textContent = 'Ставка...';
+
+            } else if (luckyState.state === 'flying') {
+                if (!luckyState.myBet || luckyState.myBet.cashedOut) {
+                    showToast('Нет активной ставки');
+                    return;
+                }
+
+                luckyWs.send(JSON.stringify({ action: 'cashout' }));
+                luckyPlayBtn.disabled = true;
+                luckyPlayBtn.textContent = 'Забираем...';
+            }
+        });
+
+        // Счётчик обратного отсчёта
+        setInterval(() => {
+            if (luckyCanvasApp && luckyCanvasApp.state === 'WAITING' && luckyCanvasApp.countdown > 0) {
+                luckyCanvasApp.setCountdown(Math.max(0, luckyCanvasApp.countdown - 0.1));
+            }
+        }, 100);
+
+        // Slots — серверная версия
+        const slotIcons = ['🍒', '🍋', '🔔', '💎', '7️⃣', '🍀', '👑'];
+        const slotsSpinBtn = document.getElementById('slotsSpinBtn');
+        const slotsRow = document.getElementById('slotsRow');
+
+        slotsSpinBtn.addEventListener('click', async () => {
+            if (state.balance < state.slotsChip) { showToast('Недостаточно монет'); return; }
+
+            slotsSpinBtn.disabled = true;
+
+            try {
+                const data = await api('/api/slots/spin', {
+                    method: 'POST',
+                    body: JSON.stringify({ bet_amount: state.slotsChip })
+                });
+
+                state.balance = data.balance;
+
+                const cells = slotsRow.querySelectorAll('.slot-cell');
+                let spins = 0;
+                const interval = setInterval(() => {
+                    cells.forEach(c => c.textContent = slotIcons[Math.floor(Math.random() * slotIcons.length)]);
+                    spins++;
+                    if (spins >= 20) {
+                        clearInterval(interval);
+                        const results = data.results;
+                        cells.forEach((c, i) => c.textContent = results[i]);
+
+                        if (data.is_win) {
+                            renderBalance();
+                            winAmountEl.textContent = `+${formatMoney(data.win_amount)} TSC`;
+                            winOverlay.classList.add('show');
+                            createConfetti();
+                            setTimeout(() => winOverlay.classList.remove('show'), 2500);
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                        } else {
+                            renderBalance();
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                        }
+                        slotsSpinBtn.disabled = false;
+                        loadHistory('slots', slotsHistoryEl);
+                    }
+                }, 100);
+            } catch (err) {
+                slotsSpinBtn.disabled = false;
+                showToast('Ошибка: ' + err.message);
+            }
+        });
+
+        // Старт
+        waitForTelegramUser();
+
+        // Периодическое обновление профиля
+        setInterval(() => {
+            if (state.user.id) loadProfile();
+        }, 30000);
+    </script>
+</body>
+</html>
